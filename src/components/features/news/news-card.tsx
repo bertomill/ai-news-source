@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Article } from '@/types/content';
 import { ExternalLink, Heart, Share2, Clock, Tag, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSharing } from '@/hooks/useSharing';
+import Link from 'next/link';
 
 interface NewsCardProps {
   article: Article;
@@ -17,27 +19,36 @@ export function NewsCard({ article, onInteraction, className }: NewsCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
+  const { shareWithFallback, isSharing } = useSharing({
+    onShare: () => {
+      onInteraction?.('share');
+    },
+    onError: (error) => {
+      console.error('Sharing failed:', error);
+    },
+  });
+
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsLiked(!isLiked);
     onInteraction?.(isLiked ? 'dislike' : 'like');
   };
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (navigator.share) {
-      navigator.share({
-        title: article.title,
-        text: article.summary,
-        url: article.url,
-      });
-    } else {
-      navigator.clipboard.writeText(article.url);
-    }
-    onInteraction?.('share');
+    await shareWithFallback({
+      title: article.title,
+      text: article.summary,
+      url: article.url,
+    });
   };
 
   const handleView = () => {
+    onInteraction?.('view');
+  };
+
+  const handleExternalView = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onInteraction?.('view');
     window.open(article.url, '_blank', 'noopener,noreferrer');
   };
@@ -66,13 +77,16 @@ export function NewsCard({ article, onInteraction, className }: NewsCardProps) {
   };
 
   return (
-    <Card 
-      className={cn(
-        'notion-card transition-all duration-200 hover:shadow-notion-lg cursor-pointer group',
-        className
-      )}
-      onClick={handleView}
-    >
+    <Link href={`/article/${article.id}`} className="block">
+      <Card 
+        className={cn(
+          'notion-card transition-all duration-200 hover:shadow-notion-lg cursor-pointer group',
+          className
+        )}
+        onClick={handleView}
+        role="article"
+        aria-label={`Article: ${article.title}`}
+      >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -148,9 +162,11 @@ export function NewsCard({ article, onInteraction, className }: NewsCardProps) {
               variant="ghost"
               size="sm"
               onClick={handleShare}
+              disabled={isSharing}
               className="h-8 w-8 p-0"
+              aria-label={`Share article: ${article.title}`}
             >
-              <Share2 className="h-4 w-4" />
+              <Share2 className={cn('h-4 w-4', isSharing && 'animate-pulse')} />
             </Button>
           </div>
           
@@ -169,15 +185,17 @@ export function NewsCard({ article, onInteraction, className }: NewsCardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleView}
+              onClick={handleExternalView}
               className="gap-1 text-xs"
+              aria-label="Open original article in new tab"
             >
               <ExternalLink className="h-3 w-3" />
-              Read
+              Read Original
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }

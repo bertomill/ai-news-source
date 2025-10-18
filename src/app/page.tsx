@@ -4,6 +4,7 @@ import { Container } from '@/components/layout/container';
 import { Grid } from '@/components/layout/grid';
 import { MobileNav } from '@/components/layout/mobile-nav';
 import { NewsFeed } from '@/components/features/news/news-feed';
+import { ClientOnly } from '@/components/ui/client-only';
 
 export default function Home() {
   return (
@@ -76,7 +77,9 @@ export default function Home() {
 
         {/* News Feed */}
         <div className="mb-12">
-          <NewsFeed />
+          <ClientOnly fallback={<div className="h-96 bg-muted animate-pulse rounded-lg" />}>
+            <NewsFeed />
+          </ClientOnly>
         </div>
 
         {/* Quick Start */}
