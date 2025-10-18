@@ -3,14 +3,36 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Container } from '@/components/layout/container';
 import { Grid } from '@/components/layout/grid';
 import { MobileNav } from '@/components/layout/mobile-nav';
-import { NewsFeed } from '@/components/features/news/news-feed';
 import { ClientOnly } from '@/components/ui/client-only';
+import { LazyComponent, createLazyComponent } from '@/components/ui/lazy-component';
+import { usePerformance } from '@/hooks/usePerformance';
+import { Suspense } from 'react';
+
+// Lazy load heavy components for better performance
+const LazyNewsFeed = createLazyComponent(
+  () => import('@/components/features/news/news-feed').then(mod => ({ default: mod.NewsFeed })),
+  {
+    shouldLoad: () => true,
+    preload: false,
+  }
+);
+
+const LazyMobileNav = createLazyComponent(
+  () => import('@/components/layout/mobile-nav').then(mod => ({ default: mod.MobileNav })),
+  {
+    shouldLoad: () => true,
+    preload: true, // Preload navigation as it's critical
+  }
+);
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <MobileNav />
+      <LazyComponent 
+        component={LazyMobileNav}
+        fallback={<div className="h-16 bg-muted animate-pulse" />}
+      />
 
       {/* Main Content */}
       <main className="py-12">
@@ -78,7 +100,11 @@ export default function Home() {
         {/* News Feed */}
         <div className="mb-12">
           <ClientOnly fallback={<div className="h-96 bg-muted animate-pulse rounded-lg" />}>
-            <NewsFeed />
+            <LazyComponent 
+              component={LazyNewsFeed}
+              fallback={<div className="h-96 bg-muted animate-pulse rounded-lg" />}
+              errorFallback={<div className="h-96 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">Failed to load news feed</div>}
+            />
           </ClientOnly>
         </div>
 

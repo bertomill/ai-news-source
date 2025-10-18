@@ -20,8 +20,8 @@ import {
   Tag, 
   ExternalLink, 
   TrendingUp,
-  Bookmark,
-  Print
+  BookmarkCheck,
+  Printer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Article } from '@/types/content';
@@ -259,7 +259,7 @@ export default function ArticleDetailPage() {
                     )}
                     aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark article'}
                   >
-                    <Bookmark className={cn('h-4 w-4', isBookmarked && 'fill-current')} />
+                    <BookmarkCheck className={cn('h-4 w-4', isBookmarked && 'fill-current')} />
                     {isBookmarked ? 'Bookmarked' : 'Bookmark'}
                   </Button>
                   <Button
@@ -269,7 +269,7 @@ export default function ArticleDetailPage() {
                     className="gap-2"
                     aria-label="Print article"
                   >
-                    <Print className="h-4 w-4" />
+                    <Printer className="h-4 w-4" />
                     Print
                   </Button>
                 </div>

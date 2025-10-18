@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { PWAProvider } from "@/components/pwa/pwa-provider";
+import { PerformanceOverlay } from "@/components/ui/performance-monitor";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <PWAProvider>
           {children}
+          <PerformanceOverlay />
         </PWAProvider>
       </body>
     </html>
